@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: midnightblue;
+        }
+
+        .card {
+            width: 150px;
+            height: 225px;
+            border: 3px solid black;
+            border-radius: 10px;
+            background-color: white;
+            margin-right: 10px;
+        }
+
+        .highlight {
+            border-width: 6px;
+        }
+
+        #piles {
+            display: flex;
+            justify-content: center;
+        }
+
+        #newCardContainer {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        #newCard {
+            margin-bottom: 20px;
+        }
+
+        #feedback {
+            font-size: 24px;
+            margin-top: 75px;
+            margin-left: 200px;
+            text-align: center;
+        }
+
+        .correct {
+            color: lime;
+        }
+
+        .incorrect {
+            color: red;
+        }
+
+        .shape {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+        }
+
+        .triangle {
+            background-color: red;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .star {
+            background-color: green;
+            clip-path: polygon(
+                50% 0%, 61.8% 35.3%, 98.2% 35.3%,
+                68.2% 57.1%, 79.1% 91%, 50% 70.8%,
+                20.9% 91%, 31.8% 57.1%, 1.8% 35.3%,
+                38.2% 35.3%
+            );
+        }
+
+        .plus {
+            background-color: yellow;
+            clip-path: polygon(
+                33.3% 0%, 66.7% 0%, 66.7% 33.3%,
+                100% 33.3%, 100% 66.7%, 66.7% 66.7%,
+                66.7% 100%, 33.3% 100%, 33.3% 66.7%,
+                0% 66.7%, 0% 33.3%, 33.3% 33.3%
+            );
+        }
+
+        .circle {
+            background-color: blue;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div id="piles">
+        <div id="pile1" class="card">
+            <div class="shape triangle"></div>
+        </div>
+        <div id="pile2" class="card">
+            <div class="shape star"></div>
+            <div class="shape star"></div>
+        </div>
+        <div id="pile3" class="card">
+            <div class="shape plus"></div>
+            <div class="shape plus"></div>
+            <div class="shape plus"></div>
+        </div>
+        <div id="pile4" class="card">
+            <div class="shape circle"></div>
+            <div class="shape circle"></div>
+            <div class="shape circle"></div>
+            <div class="shape circle"></div>
+        </div>
+    </div>
+    <div id="newCardContainer">
+        <div id="newCard" class="card"></div>
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        // Card piles
+        const piles = [
+            { color: 'red', shape: 'triangle', count: 1 },
+            { color: 'green', shape: 'star', count: 2 },
+            { color: 'yellow', shape: 'plus', count: 3 },
+            { color: 'blue', shape: 'circle', count: 4 }
+        ];
+
+        // Available rules
+        const rules = ['color', 'shape', 'count'];
+
+        var newCard;
+
+        let currentRule = rules[Math.floor(Math.random() * rules.length)];
+        let correctCount = 0;
+
+        function createNewCard() {
+            const colors = ['red', 'green', 'yellow', 'blue'];
+            const shapes = ['triangle', 'star', 'plus', 'circle'];
+            const counts = [1, 2, 3, 4];
+
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+            const count = counts[Math.floor(Math.random() * counts.length)];
+
+            newCard = document.getElementById('newCard');
+            newCard.style.backgroundColor = 'white';
+            newCard.style.borderColor = 'black';
+            newCard.classList.remove('highlight');
+
+            const shapeHTML = `<div class="shape ${shape}" style="background-color: ${color};"></div>`.repeat(count);
+            newCard.innerHTML = shapeHTML;
+
+            return { color, shape, count };
+        }
+
+        function checkRule(card, pile) {
+            if ((currentRule === 'color') && (card.color === pile.color)) {
+                return true;
+            } else if ((currentRule === 'shape') && (card.shape === pile.shape)) {
+                return true;
+            } else if ((currentRule === 'count') && (card.count === pile.count)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        function handleKeyDown(event) {
+            const keyMap = { 'd': 0, 'v': 1, 'n': 2, 'k': 3 };
+            const pileIndex = keyMap[event.key];
+            const cardPile = piles[pileIndex];
+            const feedback = document.getElementById('feedback');
+
+            document.getElementById(`pile${pileIndex + 1}`).classList.add('highlight');
+
+            if (checkRule(newCard, cardPile)) {
+                feedback.textContent = 'Correct!';
+                feedback.classList.add('correct');
+                feedback.style.color = 'limegreen';
+                correctCount++;
+            } else {
+                feedback.textContent = 'Incorrect';
+                feedback.classList.remove('correct');
+                feedback.style.color = 'red';
+                correctCount = 0;
+            }
+            feedback.textContent;
+
+            // Hide the feedback after 1 second
+            setTimeout(function () {
+              feedback.textContent = '';
+              feedback.classList.remove('correct');
+            }, 1000);
+
+            // when to change the rules
+            if (correctCount === 10) {
+                currentRule = rules.find(rule => rule !== currentRule);
+                correctCount = 0;
+            }
+            newCard = createNewCard();
+        }
+
+        function handleKeyUp(event) {
+            const keyMap = { 'd': 0, 'v': 1, 'n': 2, 'k': 3 };
+            const pileIndex = keyMap[event.key];
+
+            document.getElementById(`pile${pileIndex + 1}`).classList.remove('highlight');
+        }
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+        createNewCard();
+    </script>
+</body>
+</html>
